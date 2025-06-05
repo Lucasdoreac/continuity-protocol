@@ -12,6 +12,16 @@ import logging
 import inspect
 from datetime import datetime
 
+# Import project_id module
+try:
+    from .project_id import (
+        ProjectRegistry, ProjectContext,
+        get_current_project_id, ensure_project_context
+    )
+    PROJECT_ID_AVAILABLE = True
+except ImportError:
+    PROJECT_ID_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -33,6 +43,17 @@ class MCPServer:
         self.tools: Dict[str, Callable] = {}
         self.descriptions: Dict[str, Dict[str, Any]] = {}
         self.start_time = datetime.now().isoformat()
+
+        # Project ID tracking
+        self.current_project_id = None
+        if PROJECT_ID_AVAILABLE:
+            try:
+                self.current_project_id = get_current_project_id()
+                if self.current_project_id:
+                    logger.info(f"Current project ID: {self.current_project_id}")
+            except Exception as e:
+                logger.warning(f"Could not get current project ID: {e}")
+
         logger.info(f"Initializing {self.name} MCP server")
     
     def register_tool(self, name: str, func: Callable, description: Dict[str, Any] = None) -> None:
@@ -106,6 +127,15 @@ class MCPServer:
             from continuity_protocol.tools.session import session_create, session_save, session_restore
             from continuity_protocol.tools.context import context_store, context_retrieve, context_switch
             from continuity_protocol.tools.system import system_status, memory_optimize
+
+            # Import project tools if available
+            try:
+                from continuity_protocol.tools.project import (
+                    project_register, project_get, project_list, project_unregister, project_set_current
+                )
+                project_tools_available = True
+            except ImportError:
+                project_tools_available = False
             
             # Register session tools
             self.register_tool("session_create", session_create)
@@ -120,7 +150,16 @@ class MCPServer:
             # Register system tools
             self.register_tool("system_status", system_status)
             self.register_tool("memory_optimize", memory_optimize)
-            
+
+            # Register project tools if available
+            if project_tools_available:
+                self.register_tool("project_register", project_register)
+                self.register_tool("project_get", project_get)
+                self.register_tool("project_list", project_list)
+                self.register_tool("project_unregister", project_unregister)
+                self.register_tool("project_set_current", project_set_current)
+                logger.info("Registered project management tools")
+
             logger.info("Registered default continuity tools")
         except ImportError as e:
             logger.warning(f"Could not register all default tools: {e}")
@@ -199,9 +238,22 @@ class MCPServer:
         # Execute tool
         try:
             logger.info(f"Executing tool: {tool_name}")
+
+            # Check if we need to add project_id to context tools
+            if tool_name.startswith("context_") and self.current_project_id and "project_id" not in tool_params:
+                # Add current project ID to tool parameters
+                tool_params["project_id"] = self.current_project_id
+                logger.info(f"Added project_id {self.current_project_id} to {tool_name} call")
+
+            # Execute the tool
             result = self.tools[tool_name](**tool_params)
             logger.info(f"Tool execution successful: {tool_name}")
-            
+
+            # Update current project ID if we just set it
+            if tool_name == "project_set_current" and result.get("success") and "project_id" in result:
+                self.current_project_id = result["project_id"]
+                logger.info(f"Updated current project ID to {self.current_project_id}")
+
             return {
                 "jsonrpc": "2.0",
                 "id": request.get("id", None),

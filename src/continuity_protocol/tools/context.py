@@ -3,6 +3,9 @@ Context management tools for Continuity Protocol.
 
 This module provides tools for storing, retrieving, and manipulating context
 information, enabling seamless context preservation and switching.
+
+Contexts are now stored within project directories, identified by project IDs,
+ensuring complete separation between the protocol and project-specific data.
 """
 
 from typing import Dict, Any, Optional, List, Union
@@ -13,42 +16,71 @@ from datetime import datetime, timedelta
 import time
 import hashlib
 
+from ..project_id import (
+    ProjectRegistry, ProjectContext,
+    get_current_project_id, ensure_project_context
+)
+
 # Configure logging
 logger = logging.getLogger("continuity-protocol.context")
 
-# Base directory for context storage
-CONTEXTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+# Legacy base directory for context storage (used as fallback)
+LEGACY_CONTEXTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))), "data", "contexts")
 
 # Default namespace
 DEFAULT_NAMESPACE = "default"
 
-# Ensure contexts directory exists
-os.makedirs(CONTEXTS_DIR, exist_ok=True)
+# Ensure legacy contexts directory exists for backward compatibility
+os.makedirs(LEGACY_CONTEXTS_DIR, exist_ok=True)
 
-def _get_context_path(key: str, namespace: str = DEFAULT_NAMESPACE) -> str:
-    """Get the path for a context file"""
+def _get_context_path(key: str, namespace: str = DEFAULT_NAMESPACE, project_id: Optional[str] = None) -> str:
+    """
+    Get the path for a context file
+
+    Args:
+        key: Context identifier key
+        namespace: Context namespace
+        project_id: Optional project ID (if None, uses current project or legacy path)
+
+    Returns:
+        str: Path to context file
+    """
     # Sanitize key for use in filenames
     safe_key = hashlib.md5(key.encode()).hexdigest()
-    
-    # Create namespace directory if it doesn't exist
-    namespace_dir = os.path.join(CONTEXTS_DIR, namespace)
+
+    # Try to use project-specific context if project_id is provided or can be detected
+    if project_id is None:
+        project_id = get_current_project_id()
+
+    if project_id:
+        try:
+            # Use project-specific context directory
+            project_context = ProjectContext(project_id)
+            return project_context.get_context_path(key, namespace)
+        except Exception as e:
+            logger.error(f"Error getting project context path: {e}")
+            # Fall back to legacy path
+
+    # Use legacy path (backward compatibility)
+    namespace_dir = os.path.join(LEGACY_CONTEXTS_DIR, namespace)
     os.makedirs(namespace_dir, exist_ok=True)
-    
-    # Return path to context file
+
     return os.path.join(namespace_dir, f"{safe_key}.json")
 
-def context_store(key: str, value: Any, ttl: Optional[int] = None, 
-                  namespace: str = DEFAULT_NAMESPACE) -> Dict[str, Any]:
+def context_store(key: str, value: Any, ttl: Optional[int] = None,
+                  namespace: str = DEFAULT_NAMESPACE,
+                  project_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Store context information.
-    
+
     Args:
         key: Context identifier key
         value: Context value to store
         ttl: Time to live in seconds (optional)
         namespace: Context namespace (optional)
-        
+        project_id: Project ID to store context for (optional, uses current project if not specified)
+
     Returns:
         Dictionary with success status and expiration time if TTL was specified
     """
@@ -67,7 +99,7 @@ def context_store(key: str, value: Any, ttl: Optional[int] = None,
     }
     
     # Get context file path
-    context_path = _get_context_path(key, namespace)
+    context_path = _get_context_path(key, namespace, project_id)
     
     # Save context data
     try:
@@ -87,19 +119,20 @@ def context_store(key: str, value: Any, ttl: Optional[int] = None,
             "error": f"Error storing context: {str(e)}"
         }
 
-def context_retrieve(key: str, namespace: str = DEFAULT_NAMESPACE) -> Dict[str, Any]:
+def context_retrieve(key: str, namespace: str = DEFAULT_NAMESPACE, project_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Retrieve stored context information.
-    
+
     Args:
         key: Context identifier key
         namespace: Context namespace (optional)
-        
+        project_id: Project ID to retrieve context from (optional, uses current project if not specified)
+
     Returns:
         Dictionary with success status and retrieved context value
     """
     # Get context file path
-    context_path = _get_context_path(key, namespace)
+    context_path = _get_context_path(key, namespace, project_id)
     
     # Check if context file exists
     if not os.path.exists(context_path):
@@ -211,19 +244,20 @@ def context_switch(target_context: str, preserve_current: bool = True) -> Dict[s
             "error": f"Error switching context: {str(e)}"
         }
 
-def context_delete(key: str, namespace: str = DEFAULT_NAMESPACE) -> Dict[str, Any]:
+def context_delete(key: str, namespace: str = DEFAULT_NAMESPACE, project_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Delete stored context information.
-    
+
     Args:
         key: Context identifier key
         namespace: Context namespace (optional)
-        
+        project_id: Project ID to delete context from (optional, uses current project if not specified)
+
     Returns:
         Dictionary with success status
     """
     # Get context file path
-    context_path = _get_context_path(key, namespace)
+    context_path = _get_context_path(key, namespace, project_id)
     
     # Check if context file exists
     if not os.path.exists(context_path):
@@ -250,23 +284,38 @@ def context_delete(key: str, namespace: str = DEFAULT_NAMESPACE) -> Dict[str, An
             "error": f"Error deleting context: {str(e)}"
         }
 
-def context_list(namespace: str = DEFAULT_NAMESPACE, include_expired: bool = False) -> Dict[str, Any]:
+def context_list(namespace: str = DEFAULT_NAMESPACE, include_expired: bool = False, project_id: Optional[str] = None) -> Dict[str, Any]:
     """
     List stored context information in a namespace.
-    
+
     Args:
         namespace: Context namespace (optional)
         include_expired: Whether to include expired contexts (optional)
-        
+        project_id: Project ID to list contexts from (optional, uses current project if not specified)
+
     Returns:
         Dictionary with success status and list of contexts
     """
-    # Get namespace directory
-    namespace_dir = os.path.join(CONTEXTS_DIR, namespace)
-    
+    # Try to use project-specific context directory if project_id is provided or can be detected
+    if project_id is None:
+        project_id = get_current_project_id()
+
+    if project_id:
+        try:
+            # Use project-specific context directory
+            project_context = ProjectContext(project_id)
+            namespace_dir = os.path.join(project_context.contexts_dir, namespace)
+        except Exception as e:
+            logger.error(f"Error getting project context directory: {e}")
+            # Fall back to legacy path
+            namespace_dir = os.path.join(LEGACY_CONTEXTS_DIR, namespace)
+    else:
+        # Use legacy path
+        namespace_dir = os.path.join(LEGACY_CONTEXTS_DIR, namespace)
+
     # Check if namespace directory exists
     if not os.path.exists(namespace_dir):
-        logger.warning(f"Namespace not found: {namespace}")
+        logger.warning(f"Namespace not found: {namespace} for project: {project_id or 'legacy'}")
         return {
             "success": True,
             "contexts": [],
