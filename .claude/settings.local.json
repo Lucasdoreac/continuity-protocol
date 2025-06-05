@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(./reorganize-continuity.sh:*)",
+      "Bash(./scripts/setup-claude-desktop.sh:*)",
+      "Bash(./scripts/start-unified-server.sh:*)",
+      "Bash(mkdir:*)",
+      "Bash(./scripts/setup-simple-claude.sh:*)",
+      "Bash(./scripts/start-simple-server.sh:*)",
+      "Bash(./scripts/setup-basic-claude.sh:*)",
+      "Bash(pip3 list:*)",
+      "Bash(python3:*)",
+      "Bash(./scripts/setup-minimal-claude.sh:*)",
+      "Bash(./update-to-basic.sh:*)",
+      "Bash(./update-claude-protocol.sh:*)",
+      "Bash(./start-protocol-server.sh:*)",
+      "Bash(cat:*)",
+      "Bash(cp:*)"
+    ],
+    "deny": []
+  }
+}

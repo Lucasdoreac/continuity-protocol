@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "continuity": {
+      "command": "python3",
+      "args": ["/Users/lucascardoso/continuity-protocol/mcp-server.py"],
+      "description": "Protocolo de Continuidade de Projetos"
+    }
+  }
+}

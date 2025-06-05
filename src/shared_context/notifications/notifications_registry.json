@@ -1,0 +1,55 @@
+{
+  "notifications": [
+    {
+      "id": "notification_1749135854_info",
+      "title": "Backup autom\u00e1tico criado",
+      "message": "Backup autom\u00e1tico peri\u00f3dico criado com sucesso: backup_1749135854_auto",
+      "type": "info",
+      "source": "backup_system",
+      "created_at": "2025-06-05T12:04:14.196771",
+      "read": false,
+      "metadata": {
+        "backup_id": "backup_1749135854_auto"
+      }
+    },
+    {
+      "id": "notification_1749136120_info",
+      "title": "Backup autom\u00e1tico criado",
+      "message": "Backup autom\u00e1tico peri\u00f3dico criado com sucesso: backup_1749136120_auto",
+      "type": "info",
+      "source": "backup_system",
+      "created_at": "2025-06-05T12:08:40.221174",
+      "read": false,
+      "metadata": {
+        "backup_id": "backup_1749136120_auto"
+      }
+    },
+    {
+      "id": "notification_1749137090_info",
+      "title": "Backup autom\u00e1tico criado",
+      "message": "Backup autom\u00e1tico peri\u00f3dico criado com sucesso: backup_1749137090_auto",
+      "type": "info",
+      "source": "backup_system",
+      "created_at": "2025-06-05T12:24:50.507334",
+      "read": false,
+      "metadata": {
+        "backup_id": "backup_1749137090_auto"
+      }
+    },
+    {
+      "id": "notification_1749137117_info",
+      "title": "Backup autom\u00e1tico criado",
+      "message": "Backup autom\u00e1tico peri\u00f3dico criado com sucesso: backup_1749137117_auto",
+      "type": "info",
+      "source": "backup_system",
+      "created_at": "2025-06-05T12:25:17.430199",
+      "read": false,
+      "metadata": {
+        "backup_id": "backup_1749137117_auto"
+      }
+    }
+  ],
+  "unread_count": 4,
+  "created_at": "2025-06-05T12:04:14.170394",
+  "updated_at": "2025-06-05T12:25:17.430204"
+}

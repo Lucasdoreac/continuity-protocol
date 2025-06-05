@@ -1,0 +1,9 @@
+psutil>=5.9.0
+fastapi>=0.85.0; extra == "http"
+uvicorn>=0.18.0; extra == "http"
+requests>=2.28.0; extra == "http"
+pytest>=7.0.0; extra == "dev"
+pytest-cov>=3.0.0; extra == "dev"
+black>=22.0.0; extra == "dev"
+isort>=5.10.0; extra == "dev"
+mypy>=0.950; extra == "dev"

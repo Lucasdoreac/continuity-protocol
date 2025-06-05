@@ -1,0 +1,988 @@
+# MCP Continuity Service - Guia Completo de Implementação
+
+## 🎯 VISÃO GERAL
+
+Transformar o sistema atual em um **serviço profissional de continuidade** para LLMs customizados, com interface Streamlit, instalação simples e integração MCP.
+
+## 📋 ARQUITETURA DO PRODUTO
+
+### **Stack Tecnológico**
+```
+┌─ Frontend (Streamlit) ─────────────────┐
+│  • Dashboard de projetos               │
+│  • Chat interface integrado           │
+│  • Visualização de contexto           │
+│  • Configurações de agentes           │
+└────────────────────────────────────────┘
+            ↕ REST API
+┌─ Core Service (FastAPI) ──────────────┐
+│  • Gerenciamento de sessões           │
+│  • Sistema de continuidade            │
+│  • Integração com LLMs                │
+│  • Backup/Recovery automático         │
+└────────────────────────────────────────┘
+            ↕ MCP Protocol
+┌─ MCP Servers ─────────────────────────┐
+│  • Desktop Commander                  │
+│  • Memory Server                      │
+│  • File System                        │
+│  • Custom Agents                      │
+└────────────────────────────────────────┘
+            ↕ Storage
+┌─ Database & Storage ──────────────────┐
+│  • SQLite/PostgreSQL                  │
+│  • Vector Database (Chroma)           │
+│  • File System States                 │
+│  • Knowledge Graphs                   │
+└────────────────────────────────────────┘
+```
+
+## 🚀 FASE 1: CORE SERVICE (FastAPI Backend)
+
+### **1.1 Estrutura do Projeto**
+```
+mcp-continuity-service/
+├── src/
+│   ├── core/
+│   │   ├── continuity_manager.py     # Gerenciador principal
+│   │   ├── session_manager.py        # Controle de sessões
+│   │   ├── context_detector.py       # Detecção de contexto
+│   │   └── recovery_engine.py        # Sistema de recovery
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── projects.py           # CRUD projetos
+│   │   │   ├── sessions.py           # Gerenciamento sessões  
+│   │   │   ├── continuity.py         # Endpoints continuidade
+│   │   │   └── agents.py             # Integração agentes
+│   │   └── main.py                   # FastAPI app
+│   ├── models/
+│   │   ├── project.py                # Modelo projeto
+│   │   ├── session.py                # Modelo sessão
+│   │   └── context.py                # Modelo contexto
+│   ├── services/
+│   │   ├── mcp_client.py             # Cliente MCP
+│   │   ├── llm_service.py            # Integração LLMs
+│   │   └── storage_service.py        # Armazenamento
+│   └── utils/
+│       ├── smart_cleanup.py          # Limpeza inteligente
+│       └── emergency_system.py       # Sistema emergência
+├── frontend/
+│   ├── streamlit_app.py              # Interface principal
+│   ├── components/                   # Componentes UI
+│   └── pages/                        # Páginas específicas
+├── mcp_servers/                      # Servidores MCP custom
+├── config/
+├── tests/
+├── docker/
+├── requirements.txt
+├── setup.py
+└── README.md
+```
+
+### **1.2 Core Classes**
+
+#### **ContinuityManager (core/continuity_manager.py)**
+```python
+from typing import Dict, List, Optional
+import asyncio
+from datetime import datetime
+from .session_manager import SessionManager
+from .context_detector import ContextDetector
+from .recovery_engine import RecoveryEngine
+
+class ContinuityManager:
+    def __init__(self):
+        self.session_manager = SessionManager()
+        self.context_detector = ContextDetector()
+        self.recovery_engine = RecoveryEngine()
+        
+    async def process_user_input(self, user_input: str, session_id: str) -> Dict:
+        """Processa input do usuário e determina ação necessária"""
+        
+        # Detecta se é pergunta de continuidade
+        if self.context_detector.is_continuity_question(user_input):
+            return await self.handle_continuity_request(session_id)
+            
+        # Preserva input substantivo
+        await self.preserve_input(user_input, session_id)
+        
+        # Detecta necessidade de recovery
+        if await self.context_detector.needs_recovery(session_id):
+            await self.recovery_engine.auto_recover(session_id)
+            
+        return await self.continue_session(user_input, session_id)
+    
+    async def handle_continuity_request(self, session_id: str) -> Dict:
+        """Responde automaticamente 'onde paramos?'"""
+        context = await self.recovery_engine.load_full_context(session_id)
+        return {
+            "type": "continuity_response",
+            "context": context,
+            "projects": context.get("active_projects", []),
+            "critical_missions": context.get("critical_missions", []),
+            "next_actions": context.get("next_actions", [])
+        }
+```
+
+#### **ContextDetector (core/context_detector.py)**
+```python
+import re
+from typing import List, Dict, Tuple
+
+class ContextDetector:
+    CONTINUITY_PATTERNS = [
+        r"onde paramos\??",
+        r"o que estava(mos)? fazendo\??",
+        r"continue de onde parou",
+        r"qual (o )?status do projeto\??",
+        r"preciso recuperar o contexto"
+    ]
+    
+    def is_continuity_question(self, text: str) -> bool:
+        """Detecta se é pergunta de continuidade"""
+        text_lower = text.lower().strip()
+        
+        for pattern in self.CONTINUITY_PATTERNS:
+            if re.search(pattern, text_lower):
+                return True
+        return False
+    
+    async def needs_recovery(self, session_id: str) -> bool:
+        """Detecta se sessão precisa de recovery"""
+        # Lógica similar ao smart-context-detector.sh
+        session_info = await self.get_session_info(session_id)
+        
+        # Verifica arquivos órfãos
+        orphaned_files = await self.detect_orphaned_files()
+        
+        # Verifica estados antigos
+        stale_states = await self.detect_stale_states()
+        
+        return len(orphaned_files) > 0 or len(stale_states) > 0
+```
+
+### **1.3 API Endpoints (api/main.py)**
+```python
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from .routes import projects, sessions, continuity, agents
+
+app = FastAPI(title="MCP Continuity Service", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rotas principais
+app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
+app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
+app.include_router(continuity.router, prefix="/api/continuity", tags=["continuity"])
+app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+
+@app.post("/api/process-input")
+async def process_input(user_input: str, session_id: str):
+    """Endpoint principal para processar input do usuário"""
+    manager = ContinuityManager()
+    result = await manager.process_user_input(user_input, session_id)
+    return result
+
+@app.get("/api/health")
+async def health_check():
+    return {"status": "healthy", "service": "MCP Continuity Service"}
+```
+
+## 🎨 FASE 2: FRONTEND STREAMLIT
+
+### **2.1 Interface Principal (frontend/streamlit_app.py)**
+```python
+import streamlit as st
+import requests
+import json
+from typing import Dict, List
+
+class MCPContinuityApp:
+    def __init__(self):
+        self.api_base = "http://localhost:8000/api"
+        
+    def main(self):
+        st.set_page_config(
+            page_title="MCP Continuity Service",
+            page_icon="🔄",
+            layout="wide"
+        )
+        
+        st.title("🔄 MCP Continuity Service")
+        st.sidebar.title("Navigation")
+        
+        # Menu lateral
+        page = st.sidebar.selectbox(
+            "Choose a page:",
+            ["Dashboard", "Chat Interface", "Projects", "Sessions", "Agents", "Settings"]
+        )
+        
+        if page == "Dashboard":
+            self.dashboard_page()
+        elif page == "Chat Interface":
+            self.chat_page()
+        elif page == "Projects":
+            self.projects_page()
+        elif page == "Sessions":
+            self.sessions_page()
+        elif page == "Agents":
+            self.agents_page()
+        elif page == "Settings":
+            self.settings_page()
+    
+    def chat_page(self):
+        """Interface de chat integrada"""
+        st.header("💬 Chat with Continuity")
+        
+        # Sessão atual
+        if "session_id" not in st.session_state:
+            st.session_state.session_id = self.create_new_session()
+        
+        # Input do usuário
+        user_input = st.chat_input("Digite sua mensagem...")
+        
+        if user_input:
+            # Processa via API
+            response = self.process_user_input(user_input, st.session_state.session_id)
+            
+            # Exibe resposta
+            self.display_response(response)
+    
+    def dashboard_page(self):
+        """Dashboard principal"""
+        st.header("📊 Dashboard")
+        
+        # Métricas
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Active Projects", self.get_active_projects_count())
+        with col2:
+            st.metric("Active Sessions", self.get_active_sessions_count())
+        with col3:
+            st.metric("Critical Missions", self.get_critical_missions_count())
+        with col4:
+            st.metric("System Health", "🟢 Healthy")
+        
+        # Projetos recentes
+        st.subheader("Recent Projects")
+        projects = self.get_recent_projects()
+        
+        for project in projects:
+            with st.expander(f"📁 {project['name']}"):
+                st.write(f"**Status:** {project['status']}")
+                st.write(f"**Last Updated:** {project['last_updated']}")
+                st.write(f"**Progress:** {project['progress']}")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button(f"Continue {project['name']}", key=f"continue_{project['id']}"):
+                        self.continue_project(project['id'])
+                with col2:
+                    if st.button(f"View Details", key=f"details_{project['id']}"):
+                        self.show_project_details(project['id'])
+
+if __name__ == "__main__":
+    app = MCPContinuityApp()
+    app.main()
+```
+
+### **2.2 Componentes Especializados**
+
+#### **Chat Component (frontend/components/chat.py)**
+```python
+import streamlit as st
+from typing import List, Dict
+
+class ChatComponent:
+    def __init__(self, api_client):
+        self.api = api_client
+        
+    def render_chat_interface(self, session_id: str):
+        """Renderiza interface de chat completa"""
+        
+        # Container de mensagens
+        chat_container = st.container()
+        
+        # Histórico de mensagens
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        
+        # Exibe mensagens
+        with chat_container:
+            for message in st.session_state.messages:
+                self.render_message(message)
+        
+        # Input de nova mensagem
+        if prompt := st.chat_input("Sua mensagem..."):
+            self.handle_user_message(prompt, session_id)
+    
+    def handle_user_message(self, message: str, session_id: str):
+        """Processa mensagem do usuário"""
+        
+        # Adiciona mensagem do usuário
+        st.session_state.messages.append({
+            "role": "user",
+            "content": message,
+            "timestamp": self.get_timestamp()
+        })
+        
+        # Processa via API
+        response = self.api.process_input(message, session_id)
+        
+        # Adiciona resposta do assistente
+        st.session_state.messages.append({
+            "role": "assistant", 
+            "content": response.get("content", ""),
+            "metadata": response.get("metadata", {}),
+            "timestamp": self.get_timestamp()
+        })
+        
+        # Rerun para atualizar interface
+        st.rerun()
+```
+
+## 🔧 FASE 3: INTEGRAÇÃO MCP
+
+### **3.1 Cliente MCP Customizado (services/mcp_client.py)**
+```python
+import asyncio
+import json
+from typing import Dict, List, Any
+from mcp.client.session import ClientSession
+from mcp.client.stdio import stdio_client
+
+class MCPClient:
+    def __init__(self):
+        self.sessions: Dict[str, ClientSession] = {}
+        
+    async def connect_server(self, server_name: str, command: List[str]) -> ClientSession:
+        """Conecta a um servidor MCP"""
+        
+        session = await stdio_client(
+            server_name=server_name,
+            server_params={"command": command}
+        )
+        
+        self.sessions[server_name] = session
+        return session
+    
+    async def execute_continuity_command(self, command: str, args: Dict = None) -> Dict:
+        """Executa comando de continuidade via MCP"""
+        
+        # Conecta ao Desktop Commander se necessário
+        if "desktop_commander" not in self.sessions:
+            await self.connect_server(
+                "desktop_commander",
+                ["npx", "@modelcontextprotocol/server-desktop-commander"]
+            )
+        
+        session = self.sessions["desktop_commander"]
+        
+        # Executa comando
+        result = await session.call_tool(
+            "execute_command",
+            {"command": command}
+        )
+        
+        return result
+    
+    async def smart_context_detection(self, session_id: str) -> Dict:
+        """Executa detecção inteligente de contexto"""
+        
+        command = f"/Users/lucascardoso/apps/MCP/CONTINUITY/smart-context-detector.sh"
+        result = await self.execute_continuity_command(command)
+        
+        return self.parse_context_result(result)
+    
+    def parse_context_result(self, result: Dict) -> Dict:
+        """Parseia resultado da detecção de contexto"""
+        output = result.get("content", [{}])[0].get("text", "")
+        
+        # Extrai informações estruturadas
+        lines = output.split("\n")
+        context = {}
+        
+        for line in lines:
+            if "NEEDS_RECOVERY:" in line:
+                context["needs_recovery"] = line.split(":")[1].strip() == "true"
+            elif "SUMMARY:" in line:
+                context["summary"] = line.split(":", 1)[1].strip()
+            elif "ACTION:" in line:
+                context["action"] = line.split(":", 1)[1].strip()
+        
+        return context
+```
+
+### **3.2 Servidor MCP Personalizado**
+```python
+# mcp_servers/continuity_server.py
+from mcp.server import Server
+from mcp.types import Tool, TextContent
+import asyncio
+import json
+
+class ContinuityServer:
+    def __init__(self):
+        self.server = Server("continuity-server")
+        self.setup_tools()
+        
+    def setup_tools(self):
+        """Configura ferramentas do servidor"""
+        
+        @self.server.list_tools()
+        async def list_tools():
+            return [
+                Tool(
+                    name="detect_context",
+                    description="Detecta contexto e necessidade de continuidade",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "session_id": {"type": "string"},
+                            "user_input": {"type": "string"}
+                        },
+                        "required": ["session_id", "user_input"]
+                    }
+                ),
+                Tool(
+                    name="auto_recovery",
+                    description="Executa recovery automático de sessão",
+                    inputSchema={
+                        "type": "object", 
+                        "properties": {
+                            "session_id": {"type": "string"}
+                        },
+                        "required": ["session_id"]
+                    }
+                )
+            ]
+        
+        @self.server.call_tool()
+        async def call_tool(name: str, arguments: dict):
+            if name == "detect_context":
+                return await self.detect_context(arguments)
+            elif name == "auto_recovery":
+                return await self.auto_recovery(arguments)
+            
+    async def detect_context(self, args: dict) -> List[TextContent]:
+        """Implementa detecção de contexto"""
+        session_id = args["session_id"]
+        user_input = args["user_input"]
+        
+        # Lógica de detecção...
+        result = {
+            "needs_recovery": False,
+            "active_projects": [],
+            "critical_missions": []
+        }
+        
+        return [TextContent(
+            type="text",
+            text=json.dumps(result, indent=2)
+        )]
+
+# Ponto de entrada
+async def main():
+    server = ContinuityServer()
+    await server.server.run()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## 📦 FASE 4: EMPACOTAMENTO E INSTALAÇÃO
+
+### **4.1 Setup Script (setup.py)**
+```python
+from setuptools import setup, find_packages
+
+setup(
+    name="mcp-continuity-service",
+    version="1.0.0",
+    description="Professional continuity service for LLMs with MCP integration",
+    author="Your Name",
+    author_email="your.email@example.com",
+    packages=find_packages(),
+    install_requires=[
+        "fastapi>=0.100.0",
+        "uvicorn>=0.20.0",
+        "streamlit>=1.28.0",
+        "sqlalchemy>=2.0.0",
+        "alembic>=1.12.0",
+        "pydantic>=2.0.0",
+        "chromadb>=0.4.0",
+        "mcp>=1.0.0",
+        "python-multipart>=0.0.6",
+        "python-dotenv>=1.0.0",
+        "click>=8.0.0",
+        "rich>=13.0.0"
+    ],
+    entry_points={
+        "console_scripts": [
+            "mcp-continuity=src.cli:main",
+            "mcp-continuity-server=src.api.main:run_server",
+            "mcp-continuity-ui=frontend.streamlit_app:main"
+        ]
+    },
+    python_requires=">=3.9",
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.9+",
+    ]
+)
+```
+
+### **4.2 CLI Interface (src/cli.py)**
+```python
+import click
+import asyncio
+import uvicorn
+import subprocess
+import os
+
+@click.group()
+def main():
+    """MCP Continuity Service CLI"""
+    pass
+
+@main.command()
+@click.option("--host", default="127.0.0.1", help="Host to bind")
+@click.option("--port", default=8000, help="Port to bind")
+def start(host: str, port: int):
+    """Start the continuity service"""
+    click.echo("🚀 Starting MCP Continuity Service...")
+    
+    # Start API server
+    uvicorn.run(
+        "src.api.main:app",
+        host=host,
+        port=port,
+        reload=True
+    )
+
+@main.command()
+@click.option("--port", default=8501, help="Streamlit port")
+def ui(port: int):
+    """Launch Streamlit UI"""
+    click.echo("🎨 Launching Streamlit UI...")
+    
+    subprocess.run([
+        "streamlit", "run", 
+        "frontend/streamlit_app.py",
+        "--server.port", str(port)
+    ])
+
+@main.command()
+def init():
+    """Initialize continuity service"""
+    click.echo("🔧 Initializing MCP Continuity Service...")
+    
+    # Create directories
+    os.makedirs("data", exist_ok=True)
+    os.makedirs("logs", exist_ok=True)
+    os.makedirs("backups", exist_ok=True)
+    
+    # Initialize database
+    from src.core.database import init_db
+    init_db()
+    
+    click.echo("✅ Service initialized successfully!")
+
+@main.command()
+@click.argument("input_text")
+def process(input_text: str):
+    """Process input through continuity system"""
+    click.echo(f"Processing: {input_text}")
+    
+    # Quick processing for testing
+    import requests
+    
+    response = requests.post(
+        "http://localhost:8000/api/process-input",
+        json={
+            "user_input": input_text,
+            "session_id": "cli-session"
+        }
+    )
+    
+    click.echo(f"Response: {response.json()}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### **4.3 Docker Configuration**
+```dockerfile
+# Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for MCP servers
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Copy requirements
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Copy application
+COPY . .
+
+# Install package
+RUN pip install -e .
+
+# Expose ports
+EXPOSE 8000 8501
+
+# Default command
+CMD ["mcp-continuity", "start"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  continuity-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/continuity
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+
+  continuity-ui:
+    build: .
+    command: mcp-continuity ui --port 8501
+    ports:
+      - "8501:8501"
+    depends_on:
+      - continuity-api
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: continuity
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+```
+
+## 🤖 FASE 5: INTEGRAÇÃO COM AGENTES CUSTOMIZADOS
+
+### **5.1 Sistema de Agentes (services/agent_service.py)**
+```python
+from typing import Dict, List, Any
+import json
+from dataclasses import dataclass
+
+@dataclass
+class AgentConfig:
+    name: str
+    model: str
+    system_prompt: str
+    tools: List[str]
+    continuity_enabled: bool = True
+
+class AgentService:
+    def __init__(self):
+        self.agents: Dict[str, AgentConfig] = {}
+        self.load_default_agents()
+    
+    def load_default_agents(self):
+        """Carrega agentes padrão com continuidade"""
+        
+        # Agente de Desenvolvimento
+        self.agents["developer"] = AgentConfig(
+            name="Developer Agent",
+            model="custom-dev-model",
+            system_prompt="""
+            Você é um agente especializado em desenvolvimento de software.
+            
+            INSTRUÇÕES DE CONTINUIDADE:
+            - SEMPRE execute magic-system.sh antes de iniciar qualquer tarefa
+            - Se usuário disser "onde paramos?", execute autonomous-recovery.sh
+            - Preserve contexto de desenvolvimento entre sessões
+            - Mantenha tracking de arquivos modificados
+            - Execute backup automático antes de mudanças críticas
+            
+            FERRAMENTAS DISPONÍVEIS:
+            - Desktop Commander para operações de arquivo
+            - Memory Server para conhecimento persistente
+            - Sistema de continuidade integrado
+            """,
+            tools=["desktop_commander", "memory_server", "continuity_system"]
+        )
+        
+        # Agente de Análise
+        self.agents["analyst"] = AgentConfig(
+            name="Data Analyst Agent", 
+            model="custom-analysis-model",
+            system_prompt="""
+            Você é um agente especializado em análise de dados.
+            
+            CONTINUIDADE AUTOMÁTICA:
+            - Detecte automaticamente datasets em progresso
+            - Mantenha estado de análises parciais
+            - Execute recovery de contexto ao iniciar sessão
+            - Preserve resultados intermediários
+            """,
+            tools=["data_tools", "visualization", "continuity_system"]
+        )
+    
+    async def create_agent_session(self, agent_name: str, session_id: str) -> Dict:
+        """Cria sessão para agente específico"""
+        
+        if agent_name not in self.agents:
+            raise ValueError(f"Agent {agent_name} not found")
+        
+        agent = self.agents[agent_name]
+        
+        # Configura sessão com continuidade
+        session_config = {
+            "agent": agent.name,
+            "model": agent.model,
+            "system_prompt": agent.system_prompt,
+            "tools": agent.tools,
+            "continuity_enabled": agent.continuity_enabled,
+            "session_id": session_id
+        }
+        
+        # Inicializa contexto se continuidade habilitada
+        if agent.continuity_enabled:
+            await self.initialize_continuity_context(session_id)
+        
+        return session_config
+```
+
+### **5.2 Custom Model Integration**
+```python
+# services/custom_model_service.py
+from typing import Dict, List, Any, AsyncGenerator
+import openai
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+class CustomModelService:
+    def __init__(self):
+        self.models = {}
+        self.tokenizers = {}
+    
+    async def load_custom_model(self, model_name: str, model_path: str):
+        """Carrega modelo customizado"""
+        
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path)
+        
+        self.tokenizers[model_name] = tokenizer
+        self.models[model_name] = model
+    
+    async def chat_with_continuity(
+        self, 
+        model_name: str,
+        messages: List[Dict],
+        session_id: str,
+        continuity_enabled: bool = True
+    ) -> AsyncGenerator[str, None]:
+        """Chat com modelo customizado + continuidade"""
+        
+        # Injeta contexto de continuidade se habilitado
+        if continuity_enabled:
+            continuity_context = await self.get_continuity_context(session_id)
+            
+            # Adiciona contexto ao system prompt
+            if continuity_context:
+                system_msg = {
+                    "role": "system",
+                    "content": f"""
+                    {messages[0].get('content', '')}
+                    
+                    CONTEXTO DE CONTINUIDADE:
+                    {continuity_context}
+                    """
+                }
+                messages[0] = system_msg
+        
+        # Gera resposta
+        model = self.models[model_name]
+        tokenizer = self.tokenizers[model_name]
+        
+        # Implementa geração streaming
+        inputs = tokenizer.apply_chat_template(messages, return_tensors="pt")
+        
+        for token in model.generate(inputs, do_sample=True, stream=True):
+            decoded = tokenizer.decode(token, skip_special_tokens=True)
+            yield decoded
+    
+    async def get_continuity_context(self, session_id: str) -> str:
+        """Obtém contexto de continuidade para injeção"""
+        
+        # Conecta ao sistema de continuidade
+        from .mcp_client import MCPClient
+        
+        client = MCPClient()
+        context_result = await client.smart_context_detection(session_id)
+        
+        if context_result.get("needs_recovery"):
+            # Formata contexto para injeção no prompt
+            return f"""
+            SESSÃO ANTERIOR DETECTADA:
+            - Projetos ativos: {context_result.get('active_projects', [])}
+            - Missões críticas: {context_result.get('critical_missions', [])}
+            - Última ação: {context_result.get('last_action', 'N/A')}
+            
+            Execute recovery automático se necessário.
+            """
+        
+        return ""
+```
+
+## 🎯 INSTALAÇÃO E USO
+
+### **Instalação via pip**
+```bash
+# Clone o repositório
+git clone https://github.com/your-org/mcp-continuity-service
+cd mcp-continuity-service
+
+# Instala o pacote
+pip install -e .
+
+# Inicializa o serviço
+mcp-continuity init
+
+# Inicia API + UI
+mcp-continuity start & mcp-continuity ui
+```
+
+### **Instalação via Docker**
+```bash
+# Clone e inicia com Docker
+git clone https://github.com/your-org/mcp-continuity-service
+cd mcp-continuity-service
+
+docker-compose up -d
+```
+
+### **Uso Programático**
+```python
+from mcp_continuity import ContinuityManager, AgentService
+
+# Inicializa serviços
+manager = ContinuityManager()
+agents = AgentService()
+
+# Processa input com continuidade
+result = await manager.process_user_input(
+    user_input="onde paramos?",
+    session_id="my-session"
+)
+
+# Cria agente com continuidade
+session = await agents.create_agent_session(
+    agent_name="developer",
+    session_id="dev-session"
+)
+```
+
+### **Integração com Modelos Customizados**
+```python
+# Carrega seu modelo treinado
+model_service = CustomModelService()
+await model_service.load_custom_model(
+    "my-dev-model", 
+    "/path/to/my/trained/model"
+)
+
+# Chat com continuidade automática
+async for response in model_service.chat_with_continuity(
+    model_name="my-dev-model",
+    messages=[{"role": "user", "content": "onde paramos?"}],
+    session_id="session-123",
+    continuity_enabled=True
+):
+    print(response, end="")
+```
+
+## 🚀 ROADMAP DE IMPLEMENTAÇÃO
+
+### **Sprint 1-2 (Semanas 1-2): Core Service**
+- [ ] Implementar ContinuityManager
+- [ ] Criar API FastAPI básica
+- [ ] Integração MCP Client
+- [ ] Testes unitários básicos
+
+### **Sprint 3-4 (Semanas 3-4): Frontend**
+- [ ] Interface Streamlit completa
+- [ ] Dashboard de projetos
+- [ ] Chat interface integrada
+- [ ] Componentes de visualização
+
+### **Sprint 5-6 (Semanas 5-6): Integração Avançada**
+- [ ] Sistema de agentes customizados
+- [ ] Integração com modelos próprios
+- [ ] Servidor MCP personalizado
+- [ ] Testes de integração
+
+### **Sprint 7-8 (Semanas 7-8): Empacotamento**
+- [ ] CLI completa
+- [ ] Docker/docker-compose
+- [ ] Documentação completa
+- [ ] Scripts de instalação
+
+### **Sprint 9-10 (Semanas 9-10): Produção**
+- [ ] Deploy automatizado
+- [ ] Monitoramento e logs
+- [ ] Performance tuning
+- [ ] Release 1.0.0
+
+## 💰 MONETIZAÇÃO
+
+### **Modelo SaaS**
+- **Starter**: $19/mês - 5 projetos, 1 agente
+- **Pro**: $49/mês - 20 projetos, 5 agentes
+- **Enterprise**: $149/mês - Ilimitado + suporte
+
+### **Licença Enterprise**
+- **On-premise**: $2,999/ano por instalação
+- **White-label**: $9,999/ano + revenue share
+
+### **Marketplace**
+- **Agentes customizados**: $10-50 cada
+- **Templates**: $5-20 cada
+- **Integrações**: $20-100 cada
+
+---
+
+**Este guia te dá uma base sólida para transformar o sistema atual em um produto profissional. Que parte você quer que eu detalhe mais?**
+d

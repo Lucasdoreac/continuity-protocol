@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# 🚨 GUIA RÁPIDO DE EMERGÊNCIA
+# Todos os comandos críticos em um local
+
+echo "🚨🚨🚨 GUIA RÁPIDO DE EMERGÊNCIA 🚨🚨🚨"
+echo "======================================="
+echo ""
+echo "💥 SITUAÇÃO: Claude modificando milhares de linhas, algo deu errado"
+echo "⚡ COMANDO IMEDIATO (usar AGORA):"
+echo "/Users/lucascardoso/apps/MCP/CONTINUITY/emergency-absolute.sh freeze"
+echo ""
+echo "🔄 SITUAÇÃO: Chat fechou, preciso recuperar em NOVO CHAT"
+echo "⚡ COMANDO DE RECOVERY:"
+echo "/Users/lucascardoso/apps/MCP/CONTINUITY/emergency-absolute.sh unfreeze"
+echo ""
+echo "📊 SITUAÇÃO: Quero ver status do sistema"
+echo "⚡ COMANDO STATUS:"
+echo "/Users/lucascardoso/apps/MCP/CONTINUITY/emergency-absolute.sh status"
+echo ""
+echo "🧹 SITUAÇÃO: Sistema lento, muitos logs desnecessários"
+echo "⚡ COMANDO LIMPEZA:"
+echo "/Users/lucascardoso/apps/MCP/CONTINUITY/smart-cleanup.sh"
+echo ""
+echo "🔄 SITUAÇÃO: Iniciar sessão normal"
+echo "⚡ COMANDO NORMAL:"
+echo "/Users/lucascardoso/apps/MCP/CONTINUITY/auto-continuity.sh luaraujo session-start"
+echo ""
+echo "✅ GARANTIA: NADA É PERDIDO. TUDO É RECUPERÁVEL."
+echo "📋 Este arquivo: /Users/lucascardoso/apps/MCP/CONTINUITY/emergency-guide.sh"

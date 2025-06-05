@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Main API service
+  continuity-api:
+    build: .
+    container_name: mcp-continuity-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - continuity-network
+
+  # Streamlit UI service
+  continuity-ui:
+    build: .
+    container_name: mcp-continuity-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONPATH=/app
+    command: ["mcp-continuity", "ui", "--host", "0.0.0.0", "--port", "8501"]
+    depends_on:
+      - continuity-api
+    restart: unless-stopped
+    networks:
+      - continuity-network
+
+  # Optional: Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-continuity-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - continuity-network
+
+  # Optional: PostgreSQL for advanced data storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-continuity-postgres
+    environment:
+      POSTGRES_DB: continuity
+      POSTGRES_USER: continuity_user
+      POSTGRES_PASSWORD: continuity_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - continuity-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  continuity-network:
+    driver: bridge

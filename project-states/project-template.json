@@ -1,0 +1,38 @@
+{
+  "projectInfo": {
+    "name": "",
+    "repository": "",
+    "workingDirectory": "",
+    "lastUpdated": "",
+    "sessionId": ""
+  },
+  "development": {
+    "currentFile": "",
+    "currentComponent": "",
+    "inProgress": {
+      "type": "",
+      "description": "",
+      "remainingTasks": [],
+      "blockers": []
+    },
+    "lastAction": "",
+    "nextAction": ""
+  },
+  "context": {
+    "lastThought": "",
+    "currentFocus": "",
+    "decisions": [],
+    "learnings": []
+  },
+  "environment": {
+    "runningProcesses": [],
+    "openFiles": [],
+    "terminalSessions": [],
+    "notes": []
+  },
+  "mcpTools": {
+    "activeServers": [],
+    "knowledgeGraph": {},
+    "memoryEntries": []
+  }
+}

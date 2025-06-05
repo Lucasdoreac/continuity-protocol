@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "test-project-claude": {
+      "id": "test-project-claude",
+      "name": "Projeto Teste Claude",
+      "description": "Teste de integra\u00e7\u00e3o enterprise tools",
+      "created_at": "2025-06-05T07:31:11.560066",
+      "updated_at": "2025-06-05T07:31:22.986760",
+      "artifacts": [
+        "document_1749119482_3b797af5"
+      ],
+      "agents": []
+    }
+  }
+}

@@ -1,0 +1,154 @@
+🎯 AUDITORIA DE HARDCODING - Tue Jun  3 07:23:44 -03 2025
+=======================================
+
+📊 ESTATÍSTICAS GERAIS:
+Arquivos JavaScript:       67
+Arquivos com cores hardcoded:       55
+Arquivos usando useTheme:        8
+
+🚨 TOP 10 ARQUIVOS COM MAIS HARDCODING:
+  46 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/contexts/IntelligentColorSystem.js
+  43 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/styles/globalStyles.js
+  34 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/Chapter7Screen.js
+  32 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/components/InteractiveTips.js
+  30 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/HomeScreen.js
+  29 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/Chapter6Screen.js
+  26 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/Chapter9Screen.js
+  26 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/Chapter8Screen.js
+  25 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/screens/Chapter5Screen.js
+  25 /Users/lucascardoso/apps/MCP/luaraujo-livro-app copy/src/components/TaxCalculator.js
+
+🎨 CORES MAIS USADAS (HARDCODED):
+ 190 white
+  35 #333
+  32 #000
+  29 #f9f9f9
+  25 black
+  22 #f0f0f0
+  20 #f8f9fa
+  20 #999
+  19 #ffffff
+  19 #ddd
+  19 #4ECDC4
+  19 #2c3e50
+  16 #555
+  14 #e74c3c
+  14 #4CAF50
+
+❌ COMPONENTES SEM useTheme:
+luaraujo-livro-app
+HomeScreenSimple.js
+luaraujo-livro-app
+Chapter9Screen.js
+luaraujo-livro-app
+Chapter8Screen.js
+luaraujo-livro-app
+Chapter3Screen.js
+luaraujo-livro-app
+Chapter2Screen.js
+luaraujo-livro-app
+ReportsHistoryScreen.js
+luaraujo-livro-app
+NotificationsScreen.js
+luaraujo-livro-app
+HomeScreen.js
+luaraujo-livro-app
+SettingsScreen.js
+luaraujo-livro-app
+Chapter4Screen.js
+luaraujo-livro-app
+Chapter5Screen.js
+luaraujo-livro-app
+Chapter1Screen.js
+luaraujo-livro-app
+Chapter7Screen.js
+luaraujo-livro-app
+Chapter6Screen.js
+luaraujo-livro-app
+HistoryScreen.js
+luaraujo-livro-app
+ProgressIndicator.js
+luaraujo-livro-app
+PremiumIntegration.js
+luaraujo-livro-app
+CleanPieChart.js
+luaraujo-livro-app
+PersonalGoalsTracker.js
+luaraujo-livro-app
+RealTimeRates.js
+luaraujo-livro-app
+PortfolioTracker.js
+luaraujo-livro-app
+OnboardingScreen.js
+luaraujo-livro-app
+InvestmentGrowthChartResponsive.js
+luaraujo-livro-app
+UltraSimplePieChart.js
+luaraujo-livro-app
+TriangleVisualization.js
+luaraujo-livro-app
+InteractiveTips.js
+luaraujo-livro-app
+LoadingIndicator.js
+luaraujo-livro-app
+TriangleVisualizationResponsive.js
+luaraujo-livro-app
+RiskReturnLiquidity.js
+luaraujo-livro-app
+DarkModeToggle.js
+luaraujo-livro-app
+ProductComparison.js
+luaraujo-livro-app
+ReportGenerator.js
+luaraujo-livro-app
+InvestmentGrowthChart.js
+luaraujo-livro-app
+ExportButtons.js
+luaraujo-livro-app
+CompoundInterestCalculator.js
+luaraujo-livro-app
+WebPieChart.js
+luaraujo-livro-app
+CustomSlider.js
+luaraujo-livro-app
+RiskReturnLiquidityImproved.js
+luaraujo-livro-app
+SectionWrapper.js
+luaraujo-livro-app
+InvestorProfileQuiz.js
+luaraujo-livro-app
+SimpleDarkModeToggle.js
+luaraujo-livro-app
+SimplePieChart.js
+luaraujo-livro-app
+RatesEducation.js
+luaraujo-livro-app
+PremiumGate.js
+luaraujo-livro-app
+SimplePieChartResponsive.js
+luaraujo-livro-app
+LadderInvestmentSimulator.js
+luaraujo-livro-app
+AutomatedInvestmentSimulator.js
+luaraujo-livro-app
+UltraCleanPieChart.js
+luaraujo-livro-app
+WebPieChartStyles.web.js
+luaraujo-livro-app
+HistoryViewer.js
+luaraujo-livro-app
+ChartAnimation.web.js
+luaraujo-livro-app
+FinancialGoalPlanner.js
+luaraujo-livro-app
+ProductComparisonRendaFixa.js
+luaraujo-livro-app
+FundComparisonCalculator.js
+luaraujo-livro-app
+TaxCalculator.js
+
+🔧 EXEMPLOS DE CORREÇÃO NECESSÁRIA:
+backgroundColor: '#ffffff' → backgroundColor: colors.background
+color: '#000000' → color: colors.text
+color: 'white' → color: colors.white
+shadowColor: '#000' → shadowColor: colors.shadow

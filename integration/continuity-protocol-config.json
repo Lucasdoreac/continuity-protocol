@@ -1,0 +1,72 @@
+{
+  "server_name": "continuity-protocol",
+  "version": "1.0.0",
+  "description": "Protocolo de Continuidade de Projetos",
+  "configurations": {
+    "claude_desktop": {
+      "transport": "stdio",
+      "command": "python3",
+      "args": ["/Users/lucascardoso/apps/MCP/CONTINUITY/continuity-protocol-server.py"],
+      "description": "Continuity Protocol - Servidor de Protocolo de Continuidade de Projetos"
+    },
+    "claude_code": {
+      "transport": "stdio",
+      "command": "python3",
+      "args": ["/Users/lucascardoso/apps/MCP/CONTINUITY/continuity-protocol-server.py"],
+      "description": "Continuity Protocol - Servidor de Protocolo de Continuidade de Projetos"
+    },
+    "amazon_q": {
+      "transport": "stdio",
+      "command": "python3",
+      "args": ["/Users/lucascardoso/apps/MCP/CONTINUITY/continuity-protocol-server.py"],
+      "description": "Continuity Protocol - Servidor de Protocolo de Continuidade de Projetos"
+    },
+    "http_server": {
+      "transport": "http",
+      "port": 3000,
+      "command": "python3",
+      "args": ["/Users/lucascardoso/apps/MCP/CONTINUITY/continuity-protocol-server.py", "http", "3000"],
+      "description": "Continuity Protocol - Servidor HTTP de Protocolo de Continuidade"
+    },
+    "analyzer": {
+      "transport": "stdio",
+      "command": "python3",
+      "args": ["/Users/lucascardoso/apps/MCP/CONTINUITY/simple-project-analyzer.py"],
+      "description": "Continuity Protocol - Analisador de Projeto"
+    }
+  },
+  "tools": {
+    "project_management": [
+      "project_list",
+      "project_get",
+      "project_create",
+      "project_update"
+    ],
+    "context_management": [
+      "context_get",
+      "context_add"
+    ],
+    "session_management": [
+      "session_start",
+      "session_end",
+      "session_add_event"
+    ],
+    "artifact_management": [
+      "artifact_list",
+      "artifact_get",
+      "artifact_create"
+    ],
+    "analysis": [
+      "project_analyze",
+      "script_analyze",
+      "project_architecture",
+      "project_refactor_plan",
+      "project_summary"
+    ]
+  },
+  "install_commands": {
+    "claude_desktop": "cd /Users/lucascardoso/apps/MCP/CONTINUITY && ./update-claude-protocol.sh",
+    "claude_code": "claude mcp add continuity-protocol --transport stdio python3 /Users/lucascardoso/apps/MCP/CONTINUITY/continuity-protocol-server.py",
+    "http_server": "cd /Users/lucascardoso/apps/MCP/CONTINUITY && python3 continuity-protocol-server.py http 3000"
+  }
+}

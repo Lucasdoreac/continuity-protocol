@@ -1,0 +1,31 @@
+{
+  "llm": {
+    "provider": "anthropic",
+    "model": "claude-3-sonnet-20240229",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "fallback_provider": "openai",
+    "fallback_model": "gpt-3.5-turbo"
+  },
+  "continuity": {
+    "detection_patterns": [
+      "onde paramos",
+      "continue",
+      "status",
+      "where did we leave off",
+      "resume"
+    ],
+    "context_capture": {
+      "applications": true,
+      "documents": true,
+      "notes": true,
+      "calendar": true
+    }
+  },
+  "api": {
+    "host": "127.0.0.1",
+    "port": 8000
+  },
+  "ui": {
+    "port": 8501
+  }
+}

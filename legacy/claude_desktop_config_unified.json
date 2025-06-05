@@ -1,0 +1,15 @@
+{
+  "globalShortcut": "Ctrl+Shift+L",
+  "mcpServers": {
+    "continuity-unified": {
+      "command": "python",
+      "args": [
+        "/Users/lucascardoso/apps/MCP/CONTINUITY/project-states/mcp-continuity-service/unified_mcp_server.py"
+      ],
+      "cwd": "/Users/lucascardoso/apps/MCP/CONTINUITY/project-states/mcp-continuity-service",
+      "env": {
+        "PYTHONPATH": "/Users/lucascardoso/apps/MCP/CONTINUITY/project-states/mcp-continuity-service"
+      }
+    }
+  }
+}

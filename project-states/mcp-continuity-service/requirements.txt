@@ -1,0 +1,69 @@
+# Core dependencies
+fastapi>=0.100.0
+uvicorn>=0.20.0
+streamlit>=1.28.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+python-dotenv>=1.0.0
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Vector database
+chromadb>=0.4.0
+
+# MCP integration
+mcp>=1.0.0
+
+# CLI
+click>=8.0.0
+rich>=13.0.0
+
+# Utilities
+requests>=2.31.0
+asyncio-mqtt>=0.15.0
+python-dateutil>=2.8.0
+typing-extensions>=4.0.0
+
+# LOCAL LLM SUPPORT
+# Ollama (recommended for local LLMs)
+ollama>=0.1.7
+
+# Transformers (for Hugging Face models)
+transformers>=4.30.0
+torch>=2.0.0
+accelerate>=0.20.0
+
+# Alternative local LLM options
+# llama-cpp-python>=0.2.0  # Uncomment for llama.cpp support
+# guidance>=0.1.0          # Uncomment for Microsoft Guidance
+
+# REMOTE LLM SUPPORT
+# OpenAI
+openai>=1.0.0
+
+# Anthropic (for Claude API)
+anthropic>=0.5.0
+
+# Other LLM providers
+# cohere>=4.0.0           # Uncomment for Cohere
+# google-generativeai     # Uncomment for Google Gemini
+
+# Development
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Authentication & Security
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+python-multipart>=0.0.6
+
+# Payment processing
+stripe>=5.0.0
+
+# User management
+email-validator>=2.0.0
