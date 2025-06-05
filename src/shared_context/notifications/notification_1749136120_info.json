@@ -1,0 +1,12 @@
+{
+  "id": "notification_1749136120_info",
+  "title": "Backup autom\u00e1tico criado",
+  "message": "Backup autom\u00e1tico peri\u00f3dico criado com sucesso: backup_1749136120_auto",
+  "type": "info",
+  "source": "backup_system",
+  "created_at": "2025-06-05T12:08:40.221174",
+  "read": false,
+  "metadata": {
+    "backup_id": "backup_1749136120_auto"
+  }
+}

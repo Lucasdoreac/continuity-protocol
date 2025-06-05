@@ -1,0 +1,13 @@
+{
+  "id": "checkpoint_1749135854_startup",
+  "type": "startup",
+  "timestamp": "2025-06-05T12:04:14.193890",
+  "session_stats": {
+    "start_time": "2025-06-05T12:04:14.174819",
+    "elapsed_minutes": 0.00031785,
+    "operation_count": 0,
+    "checkpoint_count": 0,
+    "minutes_since_last_checkpoint": 0.0003177666666666667
+  },
+  "warnings": []
+}

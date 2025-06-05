@@ -1,0 +1,63 @@
+name: PR Documentation Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  doc-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Verify Documentation
+      run: |
+        # Check for existence of key documentation files
+        echo "Checking documentation files..."
+        
+        FILES=(
+          "README.md"
+          "CONTRIBUTING.md"
+          "CODE_OF_CONDUCT.md"
+          "RELATORIO_COMPARATIVO.md"
+        )
+        
+        for file in "${FILES[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file exists"
+          else
+            echo "❌ $file does not exist"
+            exit 1
+          fi
+        done
+        
+        # Count markdown files
+        MARKDOWN_COUNT=$(find . -name "*.md" | wc -l)
+        echo "Found $MARKDOWN_COUNT markdown files"
+        
+        # Verify repository structure
+        echo "Verifying repository structure..."
+        
+        DIRS=(
+          "src"
+          "tests"
+          "docs"
+          "data"
+        )
+        
+        for dir in "${DIRS[@]}"; do
+          if [ -d "$dir" ]; then
+            echo "✅ $dir directory exists"
+          else
+            echo "❌ $dir directory does not exist"
+            exit 1
+          fi
+        done
+        
+        echo "Documentation checks passed!"

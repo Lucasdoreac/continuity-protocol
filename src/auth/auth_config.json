@@ -1,0 +1,10 @@
+{
+  "token_expiration_days": 30,
+  "min_password_length": 8,
+  "hash_algorithm": "sha256",
+  "hash_iterations": 100000,
+  "salt_length": 16,
+  "token_length": 32,
+  "created_at": "2025-06-05T12:04:14.181286",
+  "updated_at": "2025-06-05T12:04:14.181294"
+}

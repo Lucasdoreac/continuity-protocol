@@ -1,0 +1,73 @@
+{
+  "backups": [
+    {
+      "id": "backup_1749135854_auto",
+      "type": "auto",
+      "created_at": "2025-06-05T12:04:14.184757",
+      "description": "Backup autom\u00e1tico peri\u00f3dico",
+      "directory": "/Users/lucascardoso/apps/MCP/CONTINUITY/src/backups/backup_1749135854_auto",
+      "files_count": 3,
+      "size_bytes": 411
+    },
+    {
+      "id": "backup_1749135871_auto",
+      "type": "auto",
+      "created_at": "2025-06-05T12:04:31.755237",
+      "description": "Backup autom\u00e1tico peri\u00f3dico",
+      "directory": "/Users/lucascardoso/apps/MCP/CONTINUITY/src/backups/backup_1749135871_auto",
+      "files_count": 4,
+      "size_bytes": 1175
+    },
+    {
+      "id": "backup_1749136120_auto",
+      "type": "auto",
+      "created_at": "2025-06-05T12:08:40.199775",
+      "description": "Backup autom\u00e1tico peri\u00f3dico",
+      "directory": "/Users/lucascardoso/apps/MCP/CONTINUITY/src/backups/backup_1749136120_auto",
+      "files_count": 4,
+      "size_bytes": 1175
+    },
+    {
+      "id": "backup_1749137090_auto",
+      "type": "auto",
+      "created_at": "2025-06-05T12:24:50.479442",
+      "description": "Backup autom\u00e1tico peri\u00f3dico",
+      "directory": "/Users/lucascardoso/apps/MCP/CONTINUITY/src/backups/backup_1749137090_auto",
+      "files_count": 5,
+      "size_bytes": 1937
+    },
+    {
+      "id": "backup_1749137117_auto",
+      "type": "auto",
+      "created_at": "2025-06-05T12:25:17.413780",
+      "description": "Backup autom\u00e1tico peri\u00f3dico",
+      "directory": "/Users/lucascardoso/apps/MCP/CONTINUITY/src/backups/backup_1749137117_auto",
+      "files_count": 6,
+      "size_bytes": 2699
+    }
+  ],
+  "git_commits": [
+    {
+      "hash": "62d95a4267c79c088a8e9bfd5e913f5f5f3fdc84",
+      "message": "Backup autom\u00e1tico peri\u00f3dico",
+      "created_at": "2025-06-05T12:08:40.519604",
+      "files_changed": 62
+    },
+    {
+      "hash": "0206f602ebee789c6c00e530ed5ee898c74a611c",
+      "message": "Backup autom\u00e1tico peri\u00f3dico",
+      "created_at": "2025-06-05T12:24:50.616718",
+      "files_changed": 151
+    },
+    {
+      "hash": "0f0c92909f9e26e2483ef8971fb3a2072461b00e",
+      "message": "Backup autom\u00e1tico peri\u00f3dico",
+      "created_at": "2025-06-05T12:25:17.587439",
+      "files_changed": 149
+    }
+  ],
+  "created_at": "2025-06-05T12:04:14.090892",
+  "updated_at": "2025-06-05T12:25:17.587521",
+  "last_backup": "2025-06-05T12:25:17.413780",
+  "last_git_commit": "2025-06-05T12:25:17.587439"
+}

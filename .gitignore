@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Project specific
+data/sessions/*
+!data/sessions/.gitkeep
+data/contexts/*
+!data/contexts/.gitkeep
+data/contexts/default/*
+!data/contexts/default/.gitkeep
+data/contexts/_context_history/*
+!data/contexts/_context_history/.gitkeep
+data/llmops/*
+!data/llmops/.gitkeep
+data/temp/*
+!data/temp/.gitkeep
+
+# Temp files
+*.log
+*.pid
+*.lock
+*.tmp
+*.bak
+session-context-compact.json
+last_emergency_backup.txt
+
+# OS
+.DS_Store
+Thumbs.db
